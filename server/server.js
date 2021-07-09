@@ -2,15 +2,24 @@ const express = require('express')
 const app = express()
 const port = 3000
 
+const AWS = require('aws-sdk');
 const http = require('http'); // or 'https' for https:// URLs
 const https = require('https'); // or 'https' for https:// URLs
 const fs = require('fs');
 const path = require('path');
 const URL = require('url').URL;
+const { 
+    v1: uuidv1,
+    v4: uuidv4,
+  } = require('uuid');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const s3 = new AWS.S3({
+    accessKeyId: process.env.KEY,
+    secretAccessKey: process.env.SECRET
+});
 
 app.get('/', async (req, res) => {
   //downloadFile("http://i3.ytimg.com/vi/J---aiyznGQ/mqdefault.jpg");
@@ -22,9 +31,35 @@ app.post('/file-analysis', async (req, res) => {
     console.log("post request received")
     const finalUrl = req.body.finalUrl;
     const email = req.body.email;
-    const localDestination = await download(finalUrl);
+    const type = req.body.type;
+    const localDestination = await download(finalUrl,type);
+    console.log(`File downloaded, path = ${localDestination}, and will be sent to amazon s3 bucket, user email is = ${email}`);
+    uploadFile(localDestination,email);
     res.send(`File downloaded, path = ${localDestination}, and will be sent to amazon s3 bucket, user email is = ${email}`);
   })
+
+  const uploadFile = (localDestination,email) => {
+    fs.readFile(localDestination, (err, data) => {
+       if (err) throw err;
+       const filename = localDestination.split("/")[1];
+       const ext = filename.split(".")[filename.split(".").length-1];
+       
+       const name = filename.split(".");
+       name.pop();
+    
+       const params = {
+           Bucket: 'dsti-project', // pass your bucket name
+           Key: `${name}_.${email}.${ext}`, // file will be saved as testBucket/contacts.csv
+           Body: JSON.stringify(data, null, 2)
+       };
+
+       console.log(params.Key)
+       s3.upload(params, function(s3Err, data) {
+           if (s3Err) throw s3Err
+           console.log(`File uploaded successfully at ${data.Location}`)
+       });
+    });
+};
   
 
 app.listen(port, () => {
@@ -40,11 +75,13 @@ const downloadFile = (url)=>{
 });}
 
 
-function download(url) {
-
+function download(url,type) {
+    console.log(url);
     return new Promise((resolve, reject) => {
+
         const fileName = path.basename(url);
-        const dest = `downloads/${fileName}`;
+        //const dest = `downloads/${fileName}`;
+        const dest = `downloads/${uuidv4()}.${type}`
         console.log(dest);
         const file = fs.createWriteStream(dest, { flags: "wx" });
 
@@ -55,7 +92,7 @@ function download(url) {
         else
             protocol=http;
 
-        const request = protocol.get(url, response => {
+        const request = protocol.get(url, response => {    
             if (response.statusCode === 200) {
                 response.pipe(file);
             } else {

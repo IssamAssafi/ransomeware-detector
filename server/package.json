@@ -9,7 +9,10 @@
   "author": "Issam A.",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1"
+    "aws-sdk": "^2.942.0",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.9"

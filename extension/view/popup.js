@@ -1,17 +1,23 @@
-changeColor.addEventListener("click", async () => {
-    console.log("heey")
-    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
-    chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      function: setPageBackgroundColor,
+document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('issam');
+    console.log("Content loaded");
+    btn.addEventListener('click', function() {
+        console.log("saving...")
+        let input = document.getElementById('InputEmail1').value
+        chrome.storage.sync.set({ "email": input }, function(){
+            console.log("email saved : "+input);
+        });
+   });
+
+
+});
+
+
+window.onload = function() {
+    chrome.storage.sync.get(['email'], function(result) {
+        console.log("onload")
+        console.log(result);
+        const email = result.email;
+        document.getElementById('InputEmail1').value=email;
     });
-  });
-  
-  // The body of this function will be executed as a content script inside the
-  // current page
-  function setPageBackgroundColor() {
-    chrome.storage.sync.get("color", ({ color }) => {
-      document.body.style.backgroundColor = color;
-    });
-  }
+};

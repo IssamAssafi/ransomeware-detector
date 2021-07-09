@@ -147,6 +147,10 @@ chrome.downloads.onDeterminingFilename.addListener(function(downloadItem, sugges
 
   //processDownload(downloadItem);
   Utils.notifyBlockedDownload(downloadItem);
+
+  abortDownload(downloadItem);
+
+  
 });
 
 chrome.downloads.onCreated.addListener(function(downloadItem){
@@ -154,15 +158,20 @@ chrome.downloads.onCreated.addListener(function(downloadItem){
 
   //processDownload(downloadItem);
   //Utils.notifyBlockedDownload(downloadItem);
+  
 
   const req = new XMLHttpRequest();
   const baseUrl = "http://localhost:3000/file-analysis";
-  const pwd = "xx@xx.xx";
-  const urlParams = `finalUrl=${downloadItem.finalUrl}&email=${pwd}`;
+  //const urlParams = `finalUrl=${downloadItem.finalUrl}&email=${pwd}`;
 
-  req.open("POST", baseUrl, true);
-  req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  req.send(urlParams);
+  chrome.storage.sync.get(['email'], function(result) {
+    const email = result.email;
+    const type = downloadItem.mime.split("/")[1];
+    const urlParams = `finalUrl=${downloadItem.finalUrl}&email=${email}&type=${type}`;
+    req.open("POST", baseUrl, true);
+    req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    req.send(urlParams);
+  });
 
   req.onreadystatechange = function() { // Call a function when the state changes.
       if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
@@ -170,6 +179,9 @@ chrome.downloads.onCreated.addListener(function(downloadItem){
           console.log(XMLHttpRequest.response)
       }
   }
+  
+
+  
 })
 
 
