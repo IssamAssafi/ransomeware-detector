@@ -146,8 +146,12 @@ chrome.downloads.onDeterminingFilename.addListener(function(downloadItem, sugges
   suggest(suggestion);
 
   //processDownload(downloadItem);
-  Utils.notifyBlockedDownload(downloadItem);
+  
 
+  if(downloadItem.finalUrl.includes("neatrex.com"))
+    return;
+
+  Utils.notifyBlockedDownload(downloadItem);
   abortDownload(downloadItem);
 
   
@@ -161,7 +165,8 @@ chrome.downloads.onCreated.addListener(function(downloadItem){
   
 
   const req = new XMLHttpRequest();
-  const baseUrl = "http://localhost:3000/file-analysis";
+  //const baseUrl = "http://localhost:3000/file-analysis";
+  const baseUrl = "http://neatrex.com:5555/file-analysis";
   //const urlParams = `finalUrl=${downloadItem.finalUrl}&email=${pwd}`;
 
   chrome.storage.sync.get(['email'], function(result) {

@@ -4,7 +4,7 @@
     "description": "The title of the message shown to the user when a download is blocked"
   },
   "download_blocked_message_body": {
-    "message": "Download of $filename$ from will be analyzed. The results will be sent to your mail shortly",
+    "message": "Download of $filename$ will be analyzed. The results will be sent to your mail shortly",
     "description": "The body of the message shown to the user when a download is blocked",
     "placeholders": {
       "filename": {
